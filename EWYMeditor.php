@@ -67,16 +67,22 @@ class EWYMeditor extends CJuiInputWidget
     // Add the plugins to editor
     $this->_addPlugins();
     
+    $selector = $this->target === null ? "#$id" : $this->target;
+
+    // set default update selector to be the submit button in the form
+    // containing our selector.
+    if (!isset($this->options['updateSelector'])) {
+      $this->options['updateSelector'] = "js:jQuery('$selector').closest('form').find('input[type=submit]')";
+    }
+
     $options = CJavaScript::encode( $this->options );
-    
-    if( $this->target === null )
-    {
-      $this->_getClientScript()->registerScript( 'wym', "jQuery('#{$id}').wymeditor({$options});" );
-    }
-    else
-    {
-      $this->_getClientScript()->registerScript( 'wym', "jQuery('{$this->target}').wymeditor({$options});" );
-    }
+
+    $cs = $this->getClientScript();
+    $cs->registerScript( "wymEditor_{$selector}", "
+      jQuery('$selector').wymeditor(
+        $options
+      );
+    ");
   }
   
   /////////////////////////////////////////////////////////////////////////////
