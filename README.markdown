@@ -45,10 +45,24 @@ Or if you want to add textarea without model:
 )); ?>
 ```
 
-You will also need to add `wymupdate` class to your submit button or change the update selector. Update selector can be changed by providing `updateSelector` and `updateEvent` parameters to options array. For example you can create a submit button like this:
+Since the wymEditor basically hides the textarea it is working on, it needs to
+synchronize data before submitting. By default, wymEditor therefore relies
+on a marker: its documentation instructs you to add the css class `wymupdate`
+to your submit button.
+
+To get rid of this marker, the EWYMeditor widget overrides this default with a
+rule, that will select the submit button of the form containing the wymEditor.
+
+If this is not working for you, you can provide your own selector as option:
 
 ```php
-<?php echo CHtml::submitButton($model->isNewRecord ? 'Submit' : 'Save', array('class' => 'wymupdate')); ?>
+<?php echo CHtml::submitButton($model->isNewRecord ? 'Submit' : 'Save', array('id' => 'mySubmitButton')); ?>
+```
+
+```php
+<?php $this->widget( 'ext.EWYMeditor.EWYMeditor', array(
+  'updateSelector' => '#mySubmitButton',
+)); ?>
 ```
 
 Configuration
