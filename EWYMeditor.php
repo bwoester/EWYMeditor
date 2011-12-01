@@ -50,22 +50,22 @@ class EWYMeditor extends CJuiInputWidget
    */
   public function run()
   {
+    $id = '';
+
     // Add textarea to the page  
     if( $this->target === null )
     {
       list( $name, $id ) = $this->resolveNameID();
       
-      if( $this->hasModel() )
+      if( $this->hasModel() ) {
         echo CHtml::activeTextArea( $this->model, $this->attribute, $this->htmlOptions );
-      else
+      } else {
         echo CHtml::textArea( $name, $this->value, $this->htmlOptions );
+      }
     }
     
     // Add the plugins to editor
-    if( $this->plugins !== array() )
-    {
-      $this->_addPlugins( $cs, $assets );
-    }
+    $this->_addPlugins();
     
     $options = CJavaScript::encode( $this->options );
     
@@ -98,11 +98,15 @@ class EWYMeditor extends CJuiInputWidget
 
   /**
    * Add plugins to the editor.
-   * @var CClientScript the client script object.
-   * @var string the path to the assets. 
    */
-  private function _addPlugins( $cs, $assets )
+  private function _addPlugins()
   {
+    // if user defined custom postInit option, or if no plugins are to be
+    // added, simply do nothing.
+    if (isset($this->options['postInit']) || empty($this->plugins)) {
+      return;
+    }
+
     // Available plugins array
     $plugins = array(
       'hovertools' => array(
@@ -123,7 +127,7 @@ class EWYMeditor extends CJuiInputWidget
     $postInit = array();
     
     // If string provided, convert it to an array
-    if( !is_array( $this->plugins ) )
+    if(is_string($this->plugins))
     {
       $this->plugins = explode( ',', $this->plugins );
       $this->plugins = array_map( 'trim', $this->plugins );
@@ -134,18 +138,16 @@ class EWYMeditor extends CJuiInputWidget
     {
       if( isset( $plugins[$plugin] ) )
       {
-        $cs->registerScriptFile( $assets . $plugins[$plugin]['file'],
-          CClientScript::POS_END );
-        $postInit[] = $plugins[$plugin]['init']; 
+        $cs = $this->getClientScript();
+        $cs->registerScriptFile( $this->_wymEditorUrl . $plugins[$plugin]['file'] );
+        $postInit[] = $plugins[$plugin]['init'];
+      } else {
+        throw new CException( "Unknown wymEditor plugin: '$plugin'." );
       }
     }
     
-    // Replace 'postInit' option if user hasn't provided a custom one
-    if( !isset( $this->options['postInit'] ) )
-    {
-      $this->options['postInit'] = "js:function(wym){"
-        . implode( '', $postInit ) . "}";
-    }
+    // Set 'postInit' option
+    $this->options['postInit'] = "js:function(wym){" . implode( '', $postInit ) . "}";
   }
 
   /////////////////////////////////////////////////////////////////////////////
