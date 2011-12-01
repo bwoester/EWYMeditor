@@ -90,7 +90,3 @@ Resources
 
 * [WYMeditor](http://www.wymeditor.org/ "WYMeditor")
 
-Notes
------
-
-* Extension uses a modified JavaScript file which replaces the window popups with inline popups. If you want to use the original WYMeditor you will need to provide jQuery and other paths through options (not tested).
