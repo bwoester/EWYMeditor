@@ -3,23 +3,22 @@
  * EWYMeditor class file.
  * 
  * @author Andrius Marcinkevicius <andrew.web@ifdattic.com>
+ * @author Benjamin Wöster <benjamin.woester@gmail.com>
  * @copyright Copyright &copy; 2011 Andrius Marcinkevicius
  * @license Licensed under MIT license. http://ifdattic.com/MIT-license.txt
  * @version 1.0
  */
 
+Yii::import( 'zii.widgets.jui.CJuiInputWidget', true );
+
 /**
  * EWYMeditor adds a WYSIWYM (What You See Is What You Mean) XHTML editor.
  * 
  * @author Andrius Marcinkevicius <andrew.web@ifdattic.com>
+ * @author Benjamin Wöster <benjamin.woester@gmail.com>
  */
-class EWYMeditor extends CInputWidget
+class EWYMeditor extends CJuiInputWidget
 {
-  /**
-   * @var array JavaScript options that should be passed to the plugin.
-   */
-  public $options = array();
-  
   /**
    * @var array the plugins which should be added to editor.
    */
@@ -30,6 +29,22 @@ class EWYMeditor extends CInputWidget
    */
   public $target = null;
   
+  /**
+   * Url of published assets
+   * @var string
+   */
+  private $_wymEditorUrl = '';
+
+  /////////////////////////////////////////////////////////////////////////////
+
+	public function init()
+  {
+    parent::init();
+    $this->_publishAssets();
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
   /**
    * Add WYMeditor to the page.
    */
@@ -46,13 +61,6 @@ class EWYMeditor extends CInputWidget
         echo CHtml::textArea( $name, $this->value, $this->htmlOptions );
     }
     
-    // Publish extension assets
-    $assets = Yii::app()->getAssetManager()->publish( Yii::getPathOfAlias(
-      'ext.EWYMeditor' ) . '/assets' );
-    $cs = Yii::app()->getClientScript();
-    $cs->registerScriptFile( $assets . '/jquery.wymeditor.js', 
-      CClientScript::POS_END );
-    
     // Add the plugins to editor
     if( $this->plugins !== array() )
     {
@@ -63,14 +71,31 @@ class EWYMeditor extends CInputWidget
     
     if( $this->target === null )
     {
-      $cs->registerScript( 'wym', "jQuery('#{$id}').wymeditor({$options});" );
+      $this->_getClientScript()->registerScript( 'wym', "jQuery('#{$id}').wymeditor({$options});" );
     }
     else
     {
-      $cs->registerScript( 'wym', "jQuery('{$this->target}').wymeditor({$options});" );
+      $this->_getClientScript()->registerScript( 'wym', "jQuery('{$this->target}').wymeditor({$options});" );
     }
   }
   
+  /////////////////////////////////////////////////////////////////////////////
+
+  private function _publishAssets()
+  {
+    // "/assets/wymEditor" is the whole wymEditor package. Since we don't need
+    // samples or the packaged jquery, we only publish what we need: the
+    // wymeditor 
+    $am = $this->_getAssetManager();
+    $wymEditorFilepath = dirname(__FILE__) . '/assets/wymEditor/wymeditor';
+    $this->_wymEditorUrl = $am->publish( $wymEditorFilepath );
+
+    $cs = $this->_getClientScript();
+    $cs->registerScriptFile( $this->_wymEditorUrl . '/jquery.wymeditor.min.js' );
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
   /**
    * Add plugins to the editor.
    * @var CClientScript the client script object.
@@ -122,5 +147,27 @@ class EWYMeditor extends CInputWidget
         . implode( '', $postInit ) . "}";
     }
   }
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @return CAssetManager
+   */
+  private function _getAssetManager()
+  {
+    return Yii::app()->assetManager;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @return CClientScript
+   */
+  private function _getClientScript()
+  {
+    return Yii::app()->clientScript;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
 }
-?>
