@@ -77,7 +77,7 @@ class EWYMeditor extends CJuiInputWidget
 
     $options = CJavaScript::encode( $this->options );
 
-    $cs = $this->getClientScript();
+    $cs = $this->_getClientScript();
     $cs->registerScript( "wymEditor_{$selector}", "
       jQuery('$selector').wymeditor(
         $options
